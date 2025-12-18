@@ -17,6 +17,8 @@ important information:
 - scheduleData -> classMeetingWeekPatternCode
 - scheduleData -> classMeetingStartTime
 - scheduleData -> classMeetingEndTime
+- enrollmentCapacity
+- enrollmentTotal
 
 so we just parse it into these things, and then we associate it with a data object
 

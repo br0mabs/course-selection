@@ -17,6 +17,11 @@ async function makeApiCall(term, subject = '', catalogNumber = '') {
         const response = await fetch(url, { method: 'GET' });
         const data = await response.json();
         
+        // If successful, store the class data
+        if (data.success && data.data) {
+            storeClassData(term, subject, catalogNumber, data.data);
+        }
+        
         return {
             success: data.success,
             data: data.data || null,
@@ -58,6 +63,6 @@ async function makeMultipleApiCalls(term, courses) {
             error: result.error
         });
     }
-    
+    console.log(results)
     return results;
 }
