@@ -1,0 +1,57 @@
+ok so what is the important information?
+
+for exams (TST), we just need the day of the week + the time of the exam, which we get from clasMeetingWeekPatternCode and classMeetingStartTime and classMeetingEndTime
+
+so we just need this information for now
+
+but to display it to the user should we have more information?
+
+well we don't need to display exam time
+tutorial time is the same as lecture time
+lab time is the same too
+
+important information:
+- classNumber
+- courseComponent
+- scheduleData -> classMeetingDayPatternCode --> R means thursday for some reason, just make sure to do that when printing
+- scheduleData -> classMeetingWeekPatternCode
+- scheduleData -> classMeetingStartTime
+- scheduleData -> classMeetingEndTime
+
+so we just parse it into these things, and then we associate it with a data object
+
+so we need to define new classes of objects containing this information, which we are fetching from the api
+
+so the flow will go like:
+
+
+user enters the term, and list of courses, which will just be a list which they can add input to, and then this will save the input to a list of courses
+we then take the list of courses, we will run api call for that term, and get the schedules
+we will then parse the json into data objects, and then run the logic, which will just go through all to all pair matching (how do we implement this?)
+also we are considering "normal" courses, so like no engineers because they probably don't need this anyways
+
+so that means we need to do a check for lec, do a check for tut, do a check for lab, etc.
+
+so basically we need the courseComponent, we get all distinct courseComponent, and then we have to make sure we have one of each
+
+so this could get big pretty fast?
+
+like lets say 5 classes, lec lab for both
+
+then 10 possibilities
+
+for first year classes this could take a while, but lets say like 3 lec and 3 lab slots for each
+
+then 3^10 is not bad, can run, and also we can have early stopping, maybe using recursion or something
+
+we can use recursion, go through the courses we do need to select, and then with the indexing, we are able to recover possible output
+
+recursion might stack overflow though, is there an iterative method?
+
+lets just say recursion for now.
+
+that works, we just need the selected objects and return the information based on that
+
+and then computing conflict is different --> for tst we don't output but we need to check for conflict
+
+
