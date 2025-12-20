@@ -7,7 +7,7 @@
  * @param {string} catalogNumber - The catalog number (e.g., "135")
  * @returns {Promise<Object>} The API response
  */
-async function makeApiCall(term, subject = '', catalogNumber = '') {
+async function makeApiCall(classData, term, subject = '', catalogNumber = '') {
     try {
         // Build URL with parameters
         let url = `/call-api?term=${encodeURIComponent(term)}`;
@@ -19,7 +19,7 @@ async function makeApiCall(term, subject = '', catalogNumber = '') {
         
         // If successful, store the class data
         if (data.success && data.data) {
-            storeClassData(term, subject, catalogNumber, data.data);
+            storeClassData(classData, term, subject, catalogNumber, data.data);
         }
         
         return {
@@ -43,6 +43,12 @@ async function makeApiCall(term, subject = '', catalogNumber = '') {
  * @returns {Promise<Array>} Array of results for each course
  */
 async function makeMultipleApiCalls(term, courses) {
+
+    let classData = {
+        courses: {},
+        lastUpdated: null
+    };
+
     const results = [];
     
     for (const course of courses) {
@@ -52,7 +58,9 @@ async function makeMultipleApiCalls(term, courses) {
         const subject = parts[0] || '';
         const catalogNumber = parts[1] || '';
         
-        const result = await makeApiCall(term, subject, catalogNumber);
+        const result = await makeApiCall(classData, term, subject, catalogNumber);
+
+        // we will take the results array and instead return valid course combinations
         
         results.push({
             course: course,
@@ -63,6 +71,27 @@ async function makeMultipleApiCalls(term, courses) {
             error: result.error
         });
     }
-    console.log(results)
+
+    // here we should process the class data
+    console.log(classData)
+    getTests(classData);
+
+    baseArray = arrayify(classData)
+    console.log(baseArray);
+
+    console.log(findAllSchedules(baseArray))
+
+    // after arrayify we need to get one from each one.
+    // so we iterate through each, and select indices
+    // we should process as we go
+
+    // we slowly fill up schedule, and also remember which indices we have chosen
+
+
+
+
+    //console.log("trol");
+    //console.log(classData);
     return results;
 }
+

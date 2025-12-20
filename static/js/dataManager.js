@@ -3,11 +3,7 @@
 // Global list to store all API calls
 let apiCallHistory = [];
 
-// Global object to store all class information
-let classData = {
-    courses: {},  // Keyed by "TERM-SUBJECT-CATALOG" (e.g., "1259-MATH-135")
-    lastUpdated: null
-};
+// global object to store 
 
 /**
  * Stores class information from API response
@@ -17,7 +13,7 @@ let classData = {
  * @param {Object} apiResponse - The raw API response data
  * @returns {string} The key used to store the data
  */
-function storeClassData(term, subject, catalogNumber, apiResponse) {
+function storeClassData(classData, term, subject, catalogNumber, apiResponse) {
     const key = `${term}-${subject}-${catalogNumber}`;
     
     classData.courses[key] = {
@@ -26,7 +22,7 @@ function storeClassData(term, subject, catalogNumber, apiResponse) {
         catalogNumber: catalogNumber,
         courseName: `${subject} ${catalogNumber}`,
         rawData: apiResponse,
-        classes: parseClassSections(apiResponse),
+        classes: parseClassSections(apiResponse, term, subject, catalogNumber),
         fetchedAt: new Date().toISOString()
     };
     
@@ -42,7 +38,7 @@ function storeClassData(term, subject, catalogNumber, apiResponse) {
  * @param {Object} apiResponse - The raw API response
  * @returns {Array} Array of parsed class sections
  */
-function parseClassSections(apiResponse) {
+function parseClassSections(apiResponse, term, subject, catalogNumber) {
     // This will depend on your API structure
     // Adjust based on the actual response format
     if (!apiResponse || !Array.isArray(apiResponse)) {
@@ -50,6 +46,9 @@ function parseClassSections(apiResponse) {
     }
     
     return apiResponse.map(section => ({
+        termCode: term || null,
+        subjectCode: subject || null,
+        catalogNumber: catalogNumber || null,
         classNumber: section.classNumber || null,
         component: section.courseComponent || null,
         enrollmentCapacity: section.maxEnrollmentCapacity || 0,
@@ -67,7 +66,7 @@ function parseClassSections(apiResponse) {
  * @param {string} catalogNumber - The catalog number
  * @returns {Object|null} The stored class data or null
  */
-function getClassData(term, subject, catalogNumber) {
+function getClassData(classData, term, subject, catalogNumber) {
     const key = `${term}-${subject}-${catalogNumber}`;
     return classData.courses[key] || null;
 }
@@ -76,7 +75,7 @@ function getClassData(term, subject, catalogNumber) {
  * Gets all stored class data
  * @returns {Object} All class data
  */
-function getAllClassData() {
+function getAllClassData(classData) {
     return classData;
 }
 
@@ -84,14 +83,14 @@ function getAllClassData() {
  * Gets all courses as an array
  * @returns {Array} Array of all course data
  */
-function getAllCourses() {
+function getAllCourses(classData) {
     return Object.values(classData.courses);
 }
 
 /**
  * Clears all stored class data
  */
-function clearClassData() {
+function clearClassData(classData) {
     classData = {
         courses: {},
         lastUpdated: null
@@ -148,7 +147,7 @@ function getLatestRequest() {
  * Exports all data (class data + history) as JSON string
  * @returns {string} JSON string of all data
  */
-function exportAllDataAsJson() {
+function exportAllDataAsJson(classData) {
     return JSON.stringify({
         classData: classData,
         history: apiCallHistory
@@ -159,6 +158,93 @@ function exportAllDataAsJson() {
  * Exports only class data as JSON string
  * @returns {string} JSON string of class data
  */
-function exportClassDataAsJson() {
+function exportClassDataAsJson(classData) {
     return JSON.stringify(classData, null, 2);
+}
+
+
+// we need to split into LEC,TUT,TST as well
+// so bascially we have to select one from each
+
+/**
+ * 
+ * @param {Object} classData data of classes
+ * @returns {Array} array of list of classes (for each course)
+ */
+function arrayify(classData) {
+    const baseArray = []
+    for (const course in classData.courses) {
+        dict = {}
+        for (const session of classData.courses[course].classes) {
+            // exempt online
+            if (session.meetingTimes === "NNNNNNN") continue;
+            if (!dict[session.component]) {
+                dict[session.component] = [];
+            } else if (session.component === "TST") {
+                // only allow one TST -- ex. if physics based its the same time anyways
+                // we will except online
+                continue;
+            }
+            dict[session.component].push(session);
+        }
+        tmp = []
+        for (key in dict) {
+            baseArray.push(dict[key])
+        }
+    }
+    return baseArray;
+}
+
+
+// process class data by creating a list of possible schedules
+// first we take all classes, and if there are tests, aggregate them
+function getTests(classData) {
+    const tests = []
+    for (const course in classData.courses) {
+        for (const session of classData.courses[course].classes) {
+            if (session.component === "TST") {
+                console.log(parseTime(session.classStart))
+                tests.push(session)
+            }
+        }
+    }
+}
+
+// how should we specify time so that its easy to compare
+// a list of sessions, with start time, end time, and date
+// since there are only 7 days, we should just hard code an array of dates
+// we should just have an array of length 7, storing lists of dates
+// recursive formula, passing an array
+// x
+
+// we need to first get it into an iterable format
+// this means we have to have a master array
+// then we have to add each object into a list, and then push them into the master array
+// then we can iterate over each object, which we will then put into another array
+
+// we want to parse ISO-8601  into HH:mm:ss format
+function parseTime(rawdate) {
+    arr = rawdate.split("T")[1].split(":")
+    arr.pop()
+    return arr
+}
+
+function findAllSchedules(baseArray) {
+    ans = [];
+    tmp = [[], [], [], [], [], [], []];
+
+    function helper(index, current) {
+        if (index === baseArray.length) {
+            ans.push([...current]);
+            return;
+        }
+        for (const item of baseArray[index]) {
+            current.push(item);
+            helper(index + 1, current);
+            current.pop();
+        }
+    }
+
+    helper(0, []);
+    return ans;
 }
