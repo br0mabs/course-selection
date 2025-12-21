@@ -196,20 +196,6 @@ function arrayify(classData) {
 }
 
 
-// process class data by creating a list of possible schedules
-// first we take all classes, and if there are tests, aggregate them
-function getTests(classData) {
-    const tests = []
-    for (const course in classData.courses) {
-        for (const session of classData.courses[course].classes) {
-            if (session.component === "TST") {
-                console.log(parseTime(session.classStart))
-                tests.push(session)
-            }
-        }
-    }
-}
-
 // how should we specify time so that its easy to compare
 // a list of sessions, with start time, end time, and date
 // since there are only 7 days, we should just hard code an array of dates
@@ -222,29 +208,69 @@ function getTests(classData) {
 // then we have to add each object into a list, and then push them into the master array
 // then we can iterate over each object, which we will then put into another array
 
-// we want to parse ISO-8601  into HH:mm:ss format
+// we want to parse ISO-8601  into [HH, mm] format
 function parseTime(rawdate) {
     arr = rawdate.split("T")[1].split(":")
     arr.pop()
     return arr
 }
 
-function findAllSchedules(baseArray) {
-    ans = [];
-    tmp = [[], [], [], [], [], [], []];
+// converts a date in [HH, mm] format to an integer time rep
+function convertToSingular(time) {
+    return parseInt(time[0]) * 60 + parseInt(time[1]);
+}
 
-    function helper(index, current) {
+// how should we display time
+// [start, end] tuples
+// then check each one
+
+function findAllSchedules(baseArray) {
+    const ans = [];
+    const tmp = [[], [], [], [], [], [], []];
+
+    function helper(index, current, schedule) {
         if (index === baseArray.length) {
             ans.push([...current]);
             return;
         }
         for (const item of baseArray[index]) {
+            const check = [convertToSingular(parseTime(item.classStart)), convertToSingular(parseTime(item.classEnd))]
+            let ok = true;
+            // check which times are a hit
+            for (var i = 0; i < 7; ++i) {
+                if (item.meetingTimes[i] == 'Y') {
+                    // we then have to check the timing
+                    // we will convert time into a single rep with hour * 60 + minute
+                    // and then check each interval in that day
+
+                    // [0] = begin, [1] = end
+                    for (const classSection of schedule[i]) {
+                        // disjoint
+                        if (check[1] <= classSection[0] || check[0] >= classSection[1]) continue;
+                        // otherwise bad
+                        ok = false;
+                        break;
+                    }
+                    if (!ok) break;
+                }
+            }
+            if (!ok) continue;
             current.push(item);
-            helper(index + 1, current);
+            for (var i = 0; i < 7; ++i) {
+                if (item.meetingTimes[i] == 'Y') {
+                    schedule[i].push(check);
+                }
+            }
+            helper(index + 1, current, schedule);
             current.pop();
+            for (var i = 0; i < 7; ++i) {
+                if (item.meetingTimes[i] == 'Y') {
+                    schedule[i].pop();
+                }
+            }
         }
     }
 
-    helper(0, []);
+    helper(0, [], tmp);
     return ans;
 }

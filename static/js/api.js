@@ -73,8 +73,7 @@ async function makeMultipleApiCalls(term, courses) {
     }
 
     // here we should process the class data
-    console.log(classData)
-    getTests(classData);
+    console.log(classData);
 
     baseArray = arrayify(classData)
     console.log(baseArray);
