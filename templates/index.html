@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Call App</title>
+    <title>Course Scheduling Tool</title>
     <style>
         * {
             margin: 0;
@@ -226,19 +226,84 @@
         
         .schedule-content {
             background: white;
-            padding: 15px;
+            padding: 0;
             border-radius: 6px;
             overflow-x: auto;
             max-height: 400px;
             overflow-y: auto;
         }
         
-        .schedule-content pre {
-            margin: 0;
-            font-size: 13px;
-            line-height: 1.5;
-            white-space: pre-wrap;
-            word-wrap: break-word;
+        .course-card {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            transition: background 0.2s;
+        }
+        
+        .course-card:last-child {
+            border-bottom: none;
+        }
+        
+        .course-card:hover {
+            background: #f8f9fa;
+        }
+        
+        .course-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .course-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: baseline;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+            margin-right: 6px;
+            min-width: 80px;
+        }
+        
+        .detail-value {
+            color: #333;
+        }
+        
+        .enrollment-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .enrollment-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .enrollment-badge.full {
+            background: #ff4757;
+            color: white;
+        }
+        
+        .enrollment-badge.available {
+            background: #26de81;
+            color: white;
+        }
+        
+        .enrollment-badge.limited {
+            background: #fed330;
+            color: #333;
         }
         
         .error-message {
@@ -276,7 +341,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>API Call Application</h1>
+        <h1>Course Scheduling Tool</h1>
         
         <div class="term-section">
             <label for="termInput">Term Number:</label>
