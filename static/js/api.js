@@ -78,7 +78,8 @@ async function makeMultipleApiCalls(term, courses) {
     baseArray = arrayify(classData)
     console.log(baseArray);
 
-    console.log(findAllSchedules(baseArray))
+    const schedules= findAllSchedules(baseArray);
+    console.log(results);
 
     // after arrayify we need to get one from each one.
     // so we iterate through each, and select indices
@@ -86,11 +87,6 @@ async function makeMultipleApiCalls(term, courses) {
 
     // we slowly fill up schedule, and also remember which indices we have chosen
 
-
-
-
-    //console.log("trol");
-    //console.log(classData);
-    return results;
+    return schedules;
 }
 

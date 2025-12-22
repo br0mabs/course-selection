@@ -34,7 +34,7 @@ async function generateSchedules() {
         // Hide loader and show results
         hideLoader();
         showSuccessResponse(
-            `Generated Schedules for ${courses.length} Course(s)`,
+            `Generated ${results.length} Schedules for ${courses.length} Course(s)`,
             results
         );
         

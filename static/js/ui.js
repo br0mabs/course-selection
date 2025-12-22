@@ -47,19 +47,49 @@ function hideLoader() {
 }
 
 /**
- * Shows success response
+ * Shows success response with each schedule in its own element
  * @param {string} title - The response title
- * @param {Object} data - The data to display
+ * @param {Array} data - Array of arrays of objects (schedules)
  */
 function showSuccessResponse(title, data) {
     const response = document.getElementById('response');
+    const responseHeader = document.getElementById('responseHeader');
     const responseTitle = document.getElementById('responseTitle');
-    const responseData = document.getElementById('responseData');
+    const responseContent = document.getElementById('responseContent');
     
-    response.classList.remove('error');
-    response.classList.add('show', 'success');
+    // Clear previous content
+    responseContent.innerHTML = '';
+    
+    // Set header
+    responseHeader.classList.remove('error');
     responseTitle.textContent = title;
-    responseData.textContent = JSON.stringify(data, null, 2);
+    
+    const schedulesContainer = document.createElement('div');
+    schedulesContainer.className = 'schedules-container';
+    
+    // Create a separate element for each schedule
+    data.forEach((schedule, index) => {
+        const scheduleItem = document.createElement('div');
+        scheduleItem.className = 'schedule-item';
+        
+        const scheduleHeader = document.createElement('div');
+        scheduleHeader.className = 'schedule-header';
+        scheduleHeader.textContent = `Schedule ${index + 1}`;
+        
+        const scheduleContent = document.createElement('div');
+        scheduleContent.className = 'schedule-content';
+        
+        const pre = document.createElement('pre');
+        pre.textContent = JSON.stringify(schedule, null, 2);
+        
+        scheduleContent.appendChild(pre);
+        scheduleItem.appendChild(scheduleHeader);
+        scheduleItem.appendChild(scheduleContent);
+        schedulesContainer.appendChild(scheduleItem);
+    });
+    
+    responseContent.appendChild(schedulesContainer);
+    response.classList.add('show');
 }
 
 /**
@@ -69,13 +99,21 @@ function showSuccessResponse(title, data) {
  */
 function showErrorResponse(title, errorMessage) {
     const response = document.getElementById('response');
+    const responseHeader = document.getElementById('responseHeader');
     const responseTitle = document.getElementById('responseTitle');
-    const responseData = document.getElementById('responseData');
+    const responseContent = document.getElementById('responseContent');
     
-    response.classList.remove('success');
-    response.classList.add('show', 'error');
+    responseHeader.classList.add('error');
     responseTitle.textContent = title;
-    responseData.textContent = errorMessage;
+    
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = errorMessage;
+    
+    responseContent.innerHTML = '';
+    responseContent.appendChild(errorDiv);
+    
+    response.classList.add('show');
 }
 
 /**
@@ -83,7 +121,7 @@ function showErrorResponse(title, errorMessage) {
  */
 function clearResponse() {
     const response = document.getElementById('response');
-    response.classList.remove('show', 'success', 'error');
+    response.classList.remove('show');
 }
 
 /**
