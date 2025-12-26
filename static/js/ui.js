@@ -191,8 +191,10 @@ function showSuccessResponse(title, data) {
         
         // Create a course card for each course in the schedule
         schedule.forEach(course => {
-            const courseCard = createCourseCard(course);
-            scheduleContent.appendChild(courseCard);
+            if (course.component !== "TST") {
+                const courseCard = createCourseCard(course);
+                scheduleContent.appendChild(courseCard);
+            }
         });
         
         scheduleItem.appendChild(scheduleHeader);

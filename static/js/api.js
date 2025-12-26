@@ -78,8 +78,8 @@ async function makeMultipleApiCalls(term, courses) {
     baseArray = arrayify(classData)
     console.log(baseArray);
 
-    const schedules= findAllSchedules(baseArray);
-    console.log(results);
+    const schedules = findAllSchedules(baseArray);
+    console.log(schedules);
 
     // after arrayify we need to get one from each one.
     // so we iterate through each, and select indices
@@ -88,5 +88,24 @@ async function makeMultipleApiCalls(term, courses) {
     // we slowly fill up schedule, and also remember which indices we have chosen
 
     return schedules;
+}
+
+async function fetchCourseData(term, subject, number) {
+    // Build the URL
+    const url = `https://classes.uwaterloo.ca/cgi-bin/cgiwrap/infocour/salook.pl?level=under&sess=${term}&subject=${subject}&cournum=${number}`
+    
+    try {
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Fetch error:', error);
+        throw error;
+    }
 }
 

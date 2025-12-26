@@ -227,10 +227,11 @@ function convertToSingular(time) {
 function findAllSchedules(baseArray) {
     const ans = [];
     const tmp = [[], [], [], [], [], [], []];
-
+    let counter = 0;
     function helper(index, current, schedule) {
         if (index === baseArray.length) {
             ans.push([...current]);
+            counter += 1;
             return;
         }
         for (const item of baseArray[index]) {
@@ -272,5 +273,9 @@ function findAllSchedules(baseArray) {
     }
 
     helper(0, [], tmp);
+    console.log(counter);
     return ans;
 }
+
+// issue to fix: TST's on different days show up as conflict, since same date of week and time
+// look into how UWFlow is able to get the date.
