@@ -1,9 +1,12 @@
 from flask import Flask, render_template, jsonify, request
+from flask_cors import CORS
 import requests
 import os
+from scraper import scrape_url  # Import the scraper
 
 # Explicitly set static and template folders
 app = Flask(__name__, static_folder='static', template_folder='templates')
+CORS(app)  # Enable CORS if needed for frontend
 
 API_KEY = os.environ.get('API_KEY')
 BASE_API_URL = 'https://openapi.data.uwaterloo.ca/v3/ClassSchedules'
@@ -44,6 +47,32 @@ def call_external_api():
             'success': False,
             'error': str(e)
         }), 500
+
+# NEW SCRAPING ENDPOINT
+@app.route('/api/scrape', methods=['POST'])
+def scrape():
+    data = request.get_json()
+    
+    if not data or 'url' not in data:
+        return jsonify({'error': 'URL is required'}), 400
+    
+    url = data['url']
+    
+    # Validate URL format
+    if not url.startswith(('http://', 'https://')):
+        return jsonify({'error': 'Invalid URL format'}), 400
+    
+    result = scrape_url(url)
+    
+    if result['success']:
+        return jsonify(result['data']), 200
+    else:
+        return jsonify({'error': result['error']}), 500
+
+# Health check endpoint
+@app.route('/api/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'healthy'}), 200
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

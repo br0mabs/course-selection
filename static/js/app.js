@@ -30,9 +30,6 @@ async function generateSchedules() {
     try {
         // Make API calls for all courses
         const results = await makeMultipleApiCalls(term, courses);
-        // directly accessing is blocked by CORS
-        //fetchCourseData("1261", "MATH", "136");
-    
         // Hide loader and show results
         hideLoader();
         showSuccessResponse(

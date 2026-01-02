@@ -90,22 +90,23 @@ async function makeMultipleApiCalls(term, courses) {
     return schedules;
 }
 
-async function fetchCourseData(term, subject, number) {
-    // Build the URL
-    const url = `https://classes.uwaterloo.ca/cgi-bin/cgiwrap/infocour/salook.pl?level=under&sess=${term}&subject=${subject}&cournum=${number}`
-    
+async function scrapeWebsite(term, subject, catalogNumber) {
+
+    var url = `https://classes.uwaterloo.ca/cgi-bin/cgiwrap/infocour/salook.pl?level=under&sess=${term}&subject=${subject}&cournum=${catalogNumber}`
     try {
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
+        const response = await fetch('http://localhost:5000/api/scrape', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url: url })
+        });
+
         const data = await response.json();
+        console.log(data);
         return data;
     } catch (error) {
-        console.error('Fetch error:', error);
-        throw error;
+        console.error('Error:', error);
     }
 }
 
