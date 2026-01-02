@@ -188,6 +188,8 @@ function showSuccessResponse(title, data) {
         
         const scheduleContent = document.createElement('div');
         scheduleContent.className = 'schedule-content';
+
+        schedule.reverse()
         
         // Create a course card for each course in the schedule
         schedule.forEach(course => {

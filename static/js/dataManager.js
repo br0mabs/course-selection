@@ -188,6 +188,17 @@ async function arrayify(classData) {
             if (session.component == "TST") {
                 data = await scrapeWebsite(session.termCode, session.subjectCode, session.catalogNumber)
                 console.log(data)
+                if (!data.found) {
+                    // this shouldn't happen
+                    console.log("sus")
+                } else {
+                    date = data.date.split("-").at(-1)
+                    const cleaned_date = cleanDate(session.termCode, date)
+                    tmp = session.classStart.split("T")
+                    session.classStart = cleaned_date + "T" + tmp[1]
+                    tmp2 = session.classEnd.split("T")
+                    session.classEnd = cleaned_date + "T" + tmp2[1]
+                }
             }
             dict[session.component].push(session);
         }
@@ -197,6 +208,12 @@ async function arrayify(classData) {
         }
     }
     return baseArray;
+}
+
+function cleanDate(term, rawDate) {
+    year = "20" + term[1] + term[2]
+    arr = rawDate.split('/')
+    return `${year}-${arr[0]}-${arr[1]}`
 }
 
 
@@ -228,6 +245,13 @@ function convertToSingular(time) {
 // [start, end] tuples
 // then check each one
 
+// we need to adapt this for tst
+// for tst we need to somehow mark that it is a tst
+
+// [start, end, date] tuples
+// date will be null for non tst's
+
+
 function findAllSchedules(baseArray) {
     const ans = [];
     const tmp = [[], [], [], [], [], [], []];
@@ -239,7 +263,11 @@ function findAllSchedules(baseArray) {
             return;
         }
         for (const item of baseArray[index]) {
-            const check = [convertToSingular(parseTime(item.classStart)), convertToSingular(parseTime(item.classEnd))]
+            const check = [
+                convertToSingular(parseTime(item.classStart)),
+                convertToSingular(parseTime(item.classEnd)),
+                item.component == "TST" ? item.classStart.split("T")[0] : null
+            ]
             let ok = true;
             // check which times are a hit
             for (var i = 0; i < 7; ++i) {
@@ -252,7 +280,11 @@ function findAllSchedules(baseArray) {
                     for (const classSection of schedule[i]) {
                         // disjoint
                         if (check[1] <= classSection[0] || check[0] >= classSection[1]) continue;
-                        // otherwise bad
+                        // if both are exams, there is a possible exemption
+                        if (check[2] != null && classSection[2] != null) {
+                            if (check[2] != classSection[2]) continue;
+                        }
+                        // otherwise there is conflict
                         ok = false;
                         break;
                     }

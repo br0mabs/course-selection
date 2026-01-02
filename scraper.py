@@ -1,12 +1,15 @@
 import requests
+import time
 from bs4 import BeautifulSoup
 
 def scrape_url(url, section_code='TST 201'):
     try:
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Referer': 'https://classes.uwaterloo.ca/'
         }
-        
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
         
@@ -32,8 +35,13 @@ def scrape_url(url, section_code='TST 201'):
                     continue
                 
                 # Get the first cell text (the section identifier)
+
+                # if theres not enough
+                if (len(cells) < 2):
+                    continue
+
                 first_cell = cells[1].get_text(strip=True)
-                print(first_cell)
+
                 # Check if this row starts with our section code (exact match in first column)
                 if first_cell == section_code:
                     result['found'] = True
