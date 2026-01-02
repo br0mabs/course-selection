@@ -75,7 +75,7 @@ async function makeMultipleApiCalls(term, courses) {
     // here we should process the class data
     console.log(classData);
 
-    baseArray = arrayify(classData)
+    baseArray = await arrayify(classData)
     console.log(baseArray);
 
     const schedules = findAllSchedules(baseArray);
@@ -93,6 +93,7 @@ async function makeMultipleApiCalls(term, courses) {
 async function scrapeWebsite(term, subject, catalogNumber) {
 
     var url = `https://classes.uwaterloo.ca/cgi-bin/cgiwrap/infocour/salook.pl?level=under&sess=${term}&subject=${subject}&cournum=${catalogNumber}`
+    console.log(url);
     try {
         const response = await fetch('http://localhost:5000/api/scrape', {
             method: 'POST',
@@ -103,10 +104,8 @@ async function scrapeWebsite(term, subject, catalogNumber) {
         });
 
         const data = await response.json();
-        console.log(data);
         return data;
     } catch (error) {
         console.error('Error:', error);
     }
 }
-

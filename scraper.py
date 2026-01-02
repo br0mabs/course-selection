@@ -18,9 +18,8 @@ def scrape_url(url, section_code='TST 201'):
         result = {
             'section': section_code,
             'found': False,
-            'data': {}
+            'date': None
         }
-        
         # Look through all tables to find the one with course sections
         for table in tables:
             rows = table.find_all('tr')
@@ -28,43 +27,29 @@ def scrape_url(url, section_code='TST 201'):
             for row in rows:
                 cells = row.find_all(['td', 'th'])
                 
-                # Convert cells to text and check if this row contains our section
-                cell_texts = [cell.get_text(strip=True) for cell in cells]
+                # Skip if no cells
+                if not cells:
+                    continue
                 
-                # Check if TST 201 (or the specified section) is in this row
-                if any(section_code in text for text in cell_texts):
+                # Get the first cell text (the section identifier)
+                first_cell = cells[1].get_text(strip=True)
+                print(first_cell)
+                # Check if this row starts with our section code (exact match in first column)
+                if first_cell == section_code:
                     result['found'] = True
                     
-                    # Extract all cell data
-                    # Typical columns: Class, Comp Sec, Camp Loc, Assoc Class, Rel 1, Rel 2, Enrl Cap, Enrl Tot, Wait Cap, Wait Tot, Time, Days, Date, Bldg, Room, Instructor
+                    # Convert all cells to text
+                    cell_texts = [cell.get_text(strip=True) for cell in cells]
                     
-                    if len(cell_texts) >= 13:  # Make sure we have enough columns
-                        result['data'] = {
-                            'class': cell_texts[0] if len(cell_texts) > 0 else None,
-                            'comp_sec': cell_texts[1] if len(cell_texts) > 1 else None,
-                            'camp_loc': cell_texts[2] if len(cell_texts) > 2 else None,
-                            'enrl_cap': cell_texts[3] if len(cell_texts) > 3 else None,
-                            'enrl_tot': cell_texts[4] if len(cell_texts) > 4 else None,
-                            'wait_cap': cell_texts[5] if len(cell_texts) > 5 else None,
-                            'wait_tot': cell_texts[6] if len(cell_texts) > 6 else None,
-                            'time': cell_texts[7] if len(cell_texts) > 7 else None,
-                            'days': cell_texts[8] if len(cell_texts) > 8 else None,
-                            'date': cell_texts[9] if len(cell_texts) > 9 else None,  # This should be 02/09-02/09
-                            'building': cell_texts[10] if len(cell_texts) > 10 else None,
-                            'room': cell_texts[11] if len(cell_texts) > 11 else None,
-                            'instructor': cell_texts[12] if len(cell_texts) > 12 else None,
-                        }
-                    else:
-                        # If structure is different, just store all cells
-                        result['data'] = {
-                            'raw_cells': cell_texts
-                        }
+                    # Extract only Time, Days, Date
+                    # Adjust these indices based on the actual table structure
+                    if len(cell_texts) >= 10:
+                        result['date'] = cell_texts[10]
                     
-                    break
-            
-            if result['found']:
-                break
+                    # Found our row, stop searching
+                    return {'success': True, 'data': result}
         
+        # If we get here, the section wasn't found
         return {'success': True, 'data': result}
         
     except requests.exceptions.RequestException as e:

@@ -171,7 +171,7 @@ function exportClassDataAsJson(classData) {
  * @param {Object} classData data of classes
  * @returns {Array} array of list of classes (for each course)
  */
-function arrayify(classData) {
+async function arrayify(classData) {
     const baseArray = []
     for (const course in classData.courses) {
         dict = {}
@@ -184,6 +184,10 @@ function arrayify(classData) {
                 // only allow one TST -- ex. if physics based its the same time anyways
                 // we will except online
                 continue;
+            }
+            if (session.component == "TST") {
+                data = await scrapeWebsite(session.termCode, session.subjectCode, session.catalogNumber)
+                console.log(data)
             }
             dict[session.component].push(session);
         }
